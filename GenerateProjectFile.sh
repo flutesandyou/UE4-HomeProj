@@ -1,0 +1,1 @@
+sh /Users/palm/repos/UnrealEngine/Engine/Build/BatchFiles/Mac/GenerateProjectFiles.sh -project="/Volumes/External/Perforce/maksimpetrov_macbook_workspace/ue4/Homework/Homework.uproject" -game

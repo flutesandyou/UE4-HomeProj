@@ -1,0 +1,7 @@
+# Unreal Engine specific folders to ignore
+/Binaries/
+/DerivedDataCache/
+/Intermediate/
+/Saved/
+/Build/
+/.vs/
