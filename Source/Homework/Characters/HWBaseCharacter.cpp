@@ -23,12 +23,33 @@ void AHWBaseCharacter::ChangeCrouchState()
 {
 	if (GetCharacterMovement()->IsCrouching())
 	{
+        GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Black, FString::Printf(TEXT("Crouch False")));
 		UnCrouch();
 	}
+    else if (HWBaseCharacterMovementComponent->IsProning())
+    {
+        ChangeProneState();
+        Crouch();
+        GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Black, FString::Printf(TEXT("Crouch True")));
+    }
 	else
 	{
+        GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Black, FString::Printf(TEXT("Crouch True")));
 		Crouch();
 	}
+}
+
+void AHWBaseCharacter::ChangeProneState()
+{
+    if (HWBaseCharacterMovementComponent->IsProning())
+    {
+        HWBaseCharacterMovementComponent->UnProne();
+    }
+    else
+    {
+        HWBaseCharacterMovementComponent->Prone();
+        ChangeCrouchState();
+    }
 }
 
 void AHWBaseCharacter::StartSprint()
@@ -95,6 +116,25 @@ void AHWBaseCharacter::OnSprintEnd_Implementation()
 bool AHWBaseCharacter::CanSprint()
 {
     return true;
+}
+
+void AHWBaseCharacter::OnStartProne(float HeightAdjust, float ScaledHeightAdjust)
+{
+    RecalculateBaseEyeHeight();
+
+    const ACharacter* DefaultChar = GetDefault<ACharacter>(GetClass());
+    if (GetMesh() && DefaultChar->GetMesh())
+    {
+        FVector& MeshRelativeLocation = GetMesh()->GetRelativeLocation_DirectMutable();
+        MeshRelativeLocation.Z = DefaultChar->GetMesh()->GetRelativeLocation().Z + HeightAdjust;
+        BaseTranslationOffset.Z = MeshRelativeLocation.Z;
+    }
+    else
+    {
+        BaseTranslationOffset.Z = DefaultChar->GetBaseTranslationOffset().Z + HeightAdjust;
+    }
+
+    K2_OnStartProne(HeightAdjust, ScaledHeightAdjust);
 }
 
 void AHWBaseCharacter::TryChangeSprintState(float DeltaTime)

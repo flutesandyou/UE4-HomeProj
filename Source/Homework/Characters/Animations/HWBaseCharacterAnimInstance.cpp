@@ -26,6 +26,7 @@ void UHWBaseCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bIsFalling = CharacterMovement->IsFalling();
     bIsCrouching = CharacterMovement->IsCrouching();
     bIsSprinting = CharacterMovement->IsSprinting();
+	bIsProning = CharacterMovement->IsProning();
 
 	//Stamina
 	bIsOutOfStamina = CharacterMovement->IsOutOfStamina();

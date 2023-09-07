@@ -2,6 +2,7 @@
 
 
 #include "HWPlayerController.h"
+#include "Homework/Components/MovementComponents/HWBaseCharacterMovementComponent.h" // Include the correct header file
 #include "../HWBaseCharacter.h"
 
 void AHWPlayerController::SetPawn(APawn* InPawn)
@@ -23,6 +24,8 @@ void AHWPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Crouch", EInputEvent::IE_Pressed, this, &AHWPlayerController::ChangeCrouchState);
     InputComponent->BindAction("Sprint", EInputEvent::IE_Pressed, this, &AHWPlayerController::StartSprint);
     InputComponent->BindAction("Sprint", EInputEvent::IE_Released, this, &AHWPlayerController::StopSprint);
+	InputComponent->BindAction("Prone", EInputEvent::IE_Pressed, this, &AHWPlayerController::StartPress);
+	InputComponent->BindAction("Prone", EInputEvent::IE_Released, this, &AHWPlayerController::StopPress);
 }
 
 void AHWPlayerController::MoveForward(float Value)
@@ -89,6 +92,14 @@ void AHWPlayerController::ChangeCrouchState()
 	}	
 }
 
+void AHWPlayerController::ChangeProneState()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->ChangeProneState();
+	}
+}
+
 void AHWPlayerController::StartSprint()
 {
     if (CachedBaseCharacter.IsValid())
@@ -103,4 +114,26 @@ void AHWPlayerController::StopSprint()
     {
         CachedBaseCharacter->StopSprint();
     }
+}
+
+void AHWPlayerController::StartPress()
+{
+	if (CachedBaseCharacter.IsValid()) 
+	{
+		GetWorldTimerManager().SetTimer(LongPressTimerHandle, this, &AHWPlayerController::HandleLongPress, CachedBaseCharacter->GetBaseCharacterMovementComponent()->PressTime, false);
+	}
+}
+
+void AHWPlayerController::StopPress()
+{
+	if (CachedBaseCharacter.IsValid()) 
+	{
+		GetWorldTimerManager().ClearTimer(LongPressTimerHandle);
+	}
+
+}
+
+void AHWPlayerController::HandleLongPress()
+{
+	ChangeProneState();
 }

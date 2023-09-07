@@ -31,9 +31,14 @@ private:
 	void LookUpAtRate(float Value);
 	void Jump();
 	void ChangeCrouchState();
-	
+	void ChangeProneState();
     void StartSprint();
     void StopSprint();
-	
+
+	void StartPress();
+	void StopPress();
+	void HandleLongPress();
+
 	TSoftObjectPtr<AHWBaseCharacter> CachedBaseCharacter;
+	FTimerHandle LongPressTimerHandle;
 };
