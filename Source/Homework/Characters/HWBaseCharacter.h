@@ -44,16 +44,9 @@ public:
     UFUNCTION(BlueprintCallable, BlueprintPure)
     FORCEINLINE float GetHipOffset() const { return HipOffset; }
 
-    UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnStartProne", ScriptName = "OnStartProne"))
-    void K2_OnStartProne(float HalfHeightAdjust, float ScaledHalfHeightAdjust);
-     
-    UFUNCTION(BlueprintNativeEvent, Category = "Character | Movement")
+  //  UFUNCTION(BlueprintNativeEvent, Category = "Character | Movement")
     void OnStartProne(float HeightAdjust, float ScaledHeightAdjust);
 
-    /** Set by character movement to specify that this Character is currently crouched. */
-    UPROPERTY(BlueprintReadOnly, replicatedUsing = OnRep_IsCrouched, Category = Character)
-    uint32 bIsProned : 1;
-    
 protected:
     
     UFUNCTION(BlueprintNativeEvent, Category = "Character | Movement")

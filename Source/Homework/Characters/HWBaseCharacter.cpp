@@ -133,8 +133,6 @@ void AHWBaseCharacter::OnStartProne(float HeightAdjust, float ScaledHeightAdjust
     {
         BaseTranslationOffset.Z = DefaultChar->GetBaseTranslationOffset().Z + HeightAdjust;
     }
-
-    K2_OnStartProne(HeightAdjust, ScaledHeightAdjust);
 }
 
 void AHWBaseCharacter::TryChangeSprintState(float DeltaTime)

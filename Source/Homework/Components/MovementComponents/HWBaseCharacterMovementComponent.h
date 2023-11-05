@@ -26,7 +26,7 @@ public:
 	void StopSprint();
 
 	//void Prone();
-	void Prone(bool bClientSimulation);
+	void Prone();
 	void UnProne();
 	virtual bool CanProneInCurrentState() const;
 
@@ -39,12 +39,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character movement: sprint", meta = (ClampMin = 0.0f, UIMin = 0.0f))
 	float PressTime = 0.5f;
 
-	AHWBaseCharacter* GetCharacterOwner() const;
-
-	FORCEINLINE AHWBaseCharacter* UHWBaseCharacterMovementComponent::GetCharacterOwner() const
-	{
-		return BaseCharacterOwner;
-	}
 	
 	UPROPERTY(Category = "Character movement: prone", EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0", UIMin = "0"))
 	float PronedHalfHeight;
