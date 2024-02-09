@@ -44,11 +44,14 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character movement: sprint", meta = (ClampMin = 0.0f, UIMin = 0.0f))
 	float OutOfStaminaSpeed = 150.0f;
-	
 
-	/** Character movement component belongs to */
-	UPROPERTY(Transient, DuplicateTransient)
-	AHWBaseCharacter* BaseCharacterOwner;
+	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
+
+	UPROPERTY(Category = "Character Movement: Swimming", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
+	float SwimmingCapsuleRadius = 60.0f;
+
+	UPROPERTY(Category = "Character Movement: Swimming", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
+	float SwimmingCapsuleHalfHeigh = 60.0f;
 
 private:
 	bool bIsSprinting;

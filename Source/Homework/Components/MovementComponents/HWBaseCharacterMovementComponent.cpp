@@ -3,6 +3,7 @@
 
 #include "HWBaseCharacterMovementComponent.h"
 #include "../../Characters/HWBaseCharacter.h"
+#include "Components/CapsuleComponent.h"
 
 float UHWBaseCharacterMovementComponent::GetMaxSpeed() const
 {
@@ -40,6 +41,22 @@ void UHWBaseCharacterMovementComponent::SetIsOutOfStamina(bool bIsOutOfStamina_I
 	{
 		StopSprint();
 		
+	}
+}
+
+void UHWBaseCharacterMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
+{
+	Super::OnMovementModeChanged(PreviousMovementMode, PreviousCustomMode);
+	if (MovementMode == MOVE_Swimming)
+	{
+		CharacterOwner->GetCapsuleComponent()->SetCapsuleSize(SwimmingCapsuleRadius, SwimmingCapsuleHalfHeigh);
+		//TODO set to swimming capsule size
+	}
+	else if (PreviousMovementMode == MOVE_Swimming)
+	{
+		ACharacter* DefaultCharacter = CharacterOwner->GetClass()->GetDefaultObject<ACharacter>();
+		CharacterOwner->GetCapsuleComponent()->SetCapsuleSize(DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleRadius(), DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight(), true);
+		//TODO set normal capsule size
 	}
 }
 

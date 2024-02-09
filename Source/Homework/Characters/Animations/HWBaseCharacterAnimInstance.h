@@ -39,6 +39,9 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
     bool bIsOutOfStamina = false;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character animation")
+    bool bIsSwimming = false;
+
     //IK
     UPROPERTY(VisibleAnywhere, Transient, BlueprintReadOnly, Category = "IK Settings")
     FVector RightFootEffectorLocation = FVector::ZeroVector;
