@@ -20,12 +20,13 @@ void AHWPlayerController::SetupInputComponent()
 	InputComponent->BindAxis("LookUp", this, &AHWPlayerController::LookUp);
 	InputComponent->BindAxis("TurnAtRate", this, &AHWPlayerController::TurnAtRate);
 	InputComponent->BindAxis("LookUpAtRate", this, &AHWPlayerController::LookUpAtRate);
+	InputComponent->BindAxis("SwimForward", this, &AHWPlayerController::SwimForward);
+	InputComponent->BindAxis("SwimRight", this, &AHWPlayerController::SwimRight);
+	InputComponent->BindAxis("SwimUp", this, &AHWPlayerController::SwimUp);
 	InputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &AHWPlayerController::Jump);
 	InputComponent->BindAction("Crouch", EInputEvent::IE_Pressed, this, &AHWPlayerController::ChangeCrouchState);
     InputComponent->BindAction("Sprint", EInputEvent::IE_Pressed, this, &AHWPlayerController::StartSprint);
     InputComponent->BindAction("Sprint", EInputEvent::IE_Released, this, &AHWPlayerController::StopSprint);
-	InputComponent->BindAction("Prone", EInputEvent::IE_Pressed, this, &AHWPlayerController::StartPress);
-	InputComponent->BindAction("Prone", EInputEvent::IE_Released, this, &AHWPlayerController::StopPress);
 }
 
 void AHWPlayerController::MoveForward(float Value)
@@ -116,24 +117,26 @@ void AHWPlayerController::StopSprint()
     }
 }
 
-void AHWPlayerController::StartPress()
+void AHWPlayerController::SwimForward(float Value)
 {
-	if (CachedBaseCharacter.IsValid()) 
+	if (CachedBaseCharacter.IsValid())
 	{
-		GetWorldTimerManager().SetTimer(LongPressTimerHandle, this, &AHWPlayerController::HandleLongPress, CachedBaseCharacter->GetBaseCharacterMovementComponent()->PressTime, false);
+		CachedBaseCharacter->SwimForward(Value);
 	}
 }
 
-void AHWPlayerController::StopPress()
+void AHWPlayerController::SwimRight(float Value)
 {
-	if (CachedBaseCharacter.IsValid()) 
+	if (CachedBaseCharacter.IsValid())
 	{
-		GetWorldTimerManager().ClearTimer(LongPressTimerHandle);
+		CachedBaseCharacter->SwimRight(Value);
 	}
-
 }
 
-void AHWPlayerController::HandleLongPress()
+void AHWPlayerController::SwimUp(float Value)
 {
-	ChangeProneState();
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->SwimUp(Value);
+	}
 }

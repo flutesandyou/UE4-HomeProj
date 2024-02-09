@@ -34,11 +34,9 @@ private:
 	void ChangeProneState();
     void StartSprint();
     void StopSprint();
-
-	void StartPress();
-	void StopPress();
-	void HandleLongPress();
+	void SwimForward(float Value);
+	void SwimRight(float Value);
+	void SwimUp(float Value);
 
 	TSoftObjectPtr<AHWBaseCharacter> CachedBaseCharacter;
-	FTimerHandle LongPressTimerHandle;
 };

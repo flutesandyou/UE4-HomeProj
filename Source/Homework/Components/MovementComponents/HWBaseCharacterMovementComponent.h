@@ -28,7 +28,6 @@ public:
 	//void Prone();
 	void Prone();
 	void UnProne();
-	virtual bool CanProneInCurrentState() const;
 
 	// stamina feature
 
@@ -38,13 +37,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character movement: sprint", meta = (ClampMin = 0.0f, UIMin = 0.0f))
 	float PressTime = 0.5f;
-
-	
-	UPROPERTY(Category = "Character movement: prone", EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0", UIMin = "0"))
-	float PronedHalfHeight;
-
-	UPROPERTY(Category = "Character Movement (General Settings)", VisibleInstanceOnly, BlueprintReadWrite, AdvancedDisplay)
-	uint8 bProneMaintainsBaseLocation : 1;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Character movement: sprint", meta=(ClampMin = 0.0f, UIMin = 0.0f))
@@ -61,5 +53,4 @@ protected:
 private:
 	bool bIsSprinting;
 	bool bIsProning;
-	bool CanEverProne;
 };

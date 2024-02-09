@@ -30,7 +30,7 @@ void APlayerCharacter::MoveForward(float Value)
 {
 	Super::MoveForward(Value);
 
-	if (!FMath::IsNearlyZero(Value, 1e-6f))
+	if (GetCharacterMovement()->IsMovingOnGround() || GetCharacterMovement()->IsFalling() && !FMath::IsNearlyZero(Value, 1e-6f))
 	{
 		FRotator YawRotator(0.0f, GetControlRotation().Yaw, 0.0f);
 		FVector ForwardVector = YawRotator.RotateVector(FVector::ForwardVector);
@@ -43,7 +43,7 @@ void APlayerCharacter::MoveRight(float Value)
 {
 	Super::MoveRight(Value);
 
-	if (!FMath::IsNearlyZero(Value, 1e-6f))
+	if (GetCharacterMovement()->IsMovingOnGround() || GetCharacterMovement()->IsFalling() && !FMath::IsNearlyZero(Value, 1e-6f))
 	{
 		FRotator YawRotator(0.0f, GetControlRotation().Yaw, 0.0f);
 		FVector RightVector = YawRotator.RotateVector(FVector::RightVector);
@@ -78,6 +78,38 @@ void APlayerCharacter::LookUpAtRate(float Value)
 	Super::LookUpAtRate(Value);
 
 	AddControllerPitchInput(Value * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+}
+
+void APlayerCharacter::SwimForward(float Value)
+{
+	Super::MoveForward(Value);
+
+	if (GetCharacterMovement()->IsSwimming() && !FMath::IsNearlyZero(Value, 1e-6f))
+	{
+		FRotator PitchYawRotator(GetControlRotation().Pitch, GetControlRotation().Yaw, 0.0f);
+		FVector ForwardVector = PitchYawRotator.RotateVector(FVector::ForwardVector);
+		AddMovementInput(ForwardVector, Value);
+	}
+}
+
+void APlayerCharacter::SwimRight(float Value)
+{
+	Super::MoveRight(Value);
+
+	if (GetCharacterMovement()->IsSwimming() && !FMath::IsNearlyZero(Value, 1e-6f))
+	{
+		FRotator YawRotator(0.0f, GetControlRotation().Yaw, 0.0f);
+		FVector RightVector = YawRotator.RotateVector(FVector::RightVector);
+		AddMovementInput(RightVector, Value);
+	}
+}
+
+void APlayerCharacter::SwimUp(float Value)
+{
+	if (GetCharacterMovement()->IsSwimming() && !FMath::IsNearlyZero(Value, 1e-6f))
+	{
+		AddMovementInput(FVector::UpVector, Value);
+	}
 }
 
 void APlayerCharacter::OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
