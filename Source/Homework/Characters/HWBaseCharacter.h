@@ -36,6 +36,8 @@ public:
 	virtual void SwimUp(float Value) {};
 
     virtual void Tick(float DeltaTime) override;
+
+    virtual void Mantle();
     virtual void BeginPlay() override;
 
     
@@ -111,6 +113,8 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character | Movement", meta = (ClampMin = 0.0f, UIMin = 0.0f))
     float SprintStaminaConsumptionVelocity;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character | Movement")
+    class ULedgeDetectorComponent* LedgeDetectorComponent;
     
 private:
     float IKTraceDistance = 0.0f;

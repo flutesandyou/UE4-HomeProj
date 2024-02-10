@@ -23,6 +23,7 @@ void AHWPlayerController::SetupInputComponent()
 	InputComponent->BindAxis("SwimForward", this, &AHWPlayerController::SwimForward);
 	InputComponent->BindAxis("SwimRight", this, &AHWPlayerController::SwimRight);
 	InputComponent->BindAxis("SwimUp", this, &AHWPlayerController::SwimUp);
+	InputComponent->BindAction("Mantle", EInputEvent::IE_Pressed, this, &AHWPlayerController::Mantle);
 	InputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &AHWPlayerController::Jump);
 	InputComponent->BindAction("Crouch", EInputEvent::IE_Pressed, this, &AHWPlayerController::ChangeCrouchState);
     InputComponent->BindAction("Sprint", EInputEvent::IE_Pressed, this, &AHWPlayerController::StartSprint);
@@ -74,6 +75,14 @@ void AHWPlayerController::LookUpAtRate(float Value)
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->LookUpAtRate(Value);
+	}
+}
+
+void AHWPlayerController::Mantle()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->Mantle();
 	}
 }
 

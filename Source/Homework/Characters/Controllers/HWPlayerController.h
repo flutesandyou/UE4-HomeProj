@@ -29,6 +29,7 @@ private:
 	void LookUp(float Value);
 	void TurnAtRate(float Value);
 	void LookUpAtRate(float Value);
+	void Mantle();
 	void Jump();
 	void ChangeCrouchState();
 	void ChangeProneState();

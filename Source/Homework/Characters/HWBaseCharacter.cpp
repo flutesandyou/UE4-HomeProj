@@ -4,6 +4,7 @@
 #include "HWBaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "../Components/MovementComponents/HWBaseCharacterMovementComponent.h"
+#include "../Components/LedgeDetectorComponents/LedgeDetectorComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 AHWBaseCharacter::AHWBaseCharacter(const FObjectInitializer& ObjectInitializer)
@@ -17,6 +18,8 @@ AHWBaseCharacter::AHWBaseCharacter(const FObjectInitializer& ObjectInitializer)
     IKTraceDistance = CollisionCapsuleHalfHeight * IKScale;
 
     CurrentStamina = MaxStamina;
+
+    LedgeDetectorComponent = CreateDefaultSubobject<ULedgeDetectorComponent>(TEXT("LedgeDetector"));
 }
 
 void AHWBaseCharacter::ChangeCrouchState()
@@ -94,6 +97,15 @@ void AHWBaseCharacter::Tick(float DeltaTime)
     else if (HWBaseCharacterMovementComponent->bIsOutOfStamina == true)
     {
         GEngine->AddOnScreenDebugMessage(1, 1.0f, FColor::Red, FString::Printf(TEXT("Stamina: %.2f"), CurrentStamina));
+    }
+}
+
+void AHWBaseCharacter::Mantle()
+{
+    FLedgeDescription LedgeDescription;
+    if (LedgeDetectorComponent->DetectLedge(LedgeDescription))
+    {
+        // TODO activate mantling
     }
 }
 
