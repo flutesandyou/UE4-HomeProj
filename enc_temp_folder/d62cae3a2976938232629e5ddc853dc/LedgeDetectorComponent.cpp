@@ -43,6 +43,7 @@ bool ULedgeDetectorComponent::DetectLedge(OUT FLedgeDescription& LedgeDescriptio
 	// 2. Downward check
 	FHitResult DownwardTraceHitResult;
 	float DownwardTraceSphereRadius = OwnerCapsuleComponent->GetScaledCapsuleRadius();
+	FCollisionShape DownwardTraceSphereShape = FCollisionShape::MakeSphere(DownwardTraceSphereRadius);
 	float DownwardTraceDepthOffset = 10.0f;
 	FVector DownwardTraceStartLocation = ForwardTraceHitResult.ImpactPoint - ForwardTraceHitResult.ImpactNormal * DownwardTraceDepthOffset;
 	DownwardTraceStartLocation.Z = CharacterBottom.Z + MaximumLedgeHeight + DownwardTraceSphereRadius;
@@ -56,6 +57,7 @@ bool ULedgeDetectorComponent::DetectLedge(OUT FLedgeDescription& LedgeDescriptio
 	// 3. Overlap check
 	float OverlapCapsuleRadius = OwnerCapsuleComponent->GetScaledCapsuleRadius();
 	float OverlapCapsuleHalfHeight = OwnerCapsuleComponent->GetScaledCapsuleHalfHeight();
+	FCollisionShape OverlapCapsuleShape = FCollisionShape::MakeCapsule(OverlapCapsuleRadius, OverlapCapsuleHalfHeight);
 	float OverlapCapsuleFloorOffset = 2.0f;
 	FVector OverlapLocation = DownwardTraceHitResult.ImpactPoint + (OverlapCapsuleHalfHeight + OverlapCapsuleFloorOffset) * FVector::UpVector;
 
@@ -63,6 +65,13 @@ bool ULedgeDetectorComponent::DetectLedge(OUT FLedgeDescription& LedgeDescriptio
 	{
 		return false;
 	}
+
+	//if (GetWorld()->OverlapAnyTestByProfile(OverlapLocation, FQuat::Identity, FName("Pawn"), OverlapCapsuleShape, QueryParams))
+	//{
+	//	DrawDebugCapsule(GetWorld(), OverlapLocation, OverlapCapsuleHalfHeight, OverlapCapsuleRadius, FQuat::Identity, FColor::Yellow, false, DrawTime);
+	//	return false;
+	//}
+
 	LedgeDescription.Location = DownwardTraceHitResult.ImpactPoint;
 	LedgeDescription.Rotation = (ForwardTraceHitResult.ImpactNormal * FVector(-1.0f, -1.0f, 0.0f)).ToOrientationRotator();
 
