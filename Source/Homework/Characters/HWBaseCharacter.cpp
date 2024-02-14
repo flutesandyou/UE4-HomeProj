@@ -105,8 +105,13 @@ void AHWBaseCharacter::Mantle()
     FLedgeDescription LedgeDescription;
     if (LedgeDetectorComponent->DetectLedge(LedgeDescription))
     {
-        // TODO activate mantling
+        GetBaseCharacterMovementComponent()->StartMantle(LedgeDescription);
     }
+}
+
+bool AHWBaseCharacter::CanJumpInternal_Implementation() const
+{
+    return Super::CanJumpInternal_Implementation() && !GetBaseCharacterMovementComponent()->IsMantling();
 }
 
 void AHWBaseCharacter::BeginPlay()

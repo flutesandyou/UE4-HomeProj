@@ -33,6 +33,22 @@ void UHWBaseCharacterMovementComponent::StopSprint()
 	bForceMaxAccel = 0;
 }
 
+void UHWBaseCharacterMovementComponent::StartMantle(const FLedgeDescription& LedgeDescription)
+{
+	TargetLedge = LedgeDescription;
+	SetMovementMode(EMovementMode::MOVE_Custom, (uint8)ECustomMovementMode::CMOVE_Mantling);
+}
+
+void UHWBaseCharacterMovementComponent::EndMantle()
+{
+	SetMovementMode(MOVE_Walking);
+}
+
+bool UHWBaseCharacterMovementComponent::IsMantling() const
+{
+	return UpdatedComponent && MovementMode == MOVE_Custom && CustomMovementMode == (uint8)ECustomMovementMode::CMOVE_Mantling;
+}
+
 void UHWBaseCharacterMovementComponent::SetIsOutOfStamina(bool bIsOutOfStamina_In)
 {
 	bIsOutOfStamina = bIsOutOfStamina_In;
@@ -44,19 +60,58 @@ void UHWBaseCharacterMovementComponent::SetIsOutOfStamina(bool bIsOutOfStamina_I
 	}
 }
 
+void UHWBaseCharacterMovementComponent::PhysCustom(float DeltaTime, int32 Iterations)
+{
+	switch (CustomMovementMode)
+	{
+		case (uint8)ECustomMovementMode::CMOVE_Mantling:
+		{
+			float ProgressRatio = GetWorld()->GetTimerManager().GetTimerElapsed(MantlingTimer) / TargetMantlingTime;
+			FVector NewLocation = FMath::Lerp(InitialMantlingLocation, TargetLedge.Location, ProgressRatio);
+			FRotator NewRotation = FMath::Lerp(InitialMantlingRotation, TargetLedge.Rotation, ProgressRatio);
+
+			FVector Delta =  NewLocation - GetActorLocation();
+
+			FHitResult HitResult;
+			SafeMoveUpdatedComponent(Delta, NewRotation, false, HitResult);
+			break;
+		}
+	default:
+		break;
+	}
+	
+
+	Super::PhysCustom(DeltaTime, Iterations);
+}
+
 void UHWBaseCharacterMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
 {
 	Super::OnMovementModeChanged(PreviousMovementMode, PreviousCustomMode);
 	if (MovementMode == MOVE_Swimming)
 	{
 		CharacterOwner->GetCapsuleComponent()->SetCapsuleSize(SwimmingCapsuleRadius, SwimmingCapsuleHalfHeigh);
-		//TODO set to swimming capsule size
 	}
 	else if (PreviousMovementMode == MOVE_Swimming)
 	{
 		ACharacter* DefaultCharacter = CharacterOwner->GetClass()->GetDefaultObject<ACharacter>();
 		CharacterOwner->GetCapsuleComponent()->SetCapsuleSize(DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleRadius(), DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight(), true);
-		//TODO set normal capsule size
+	}
+
+	if (MovementMode == MOVE_Custom)
+	{
+		switch (CustomMovementMode)
+		{
+			case (uint8)ECustomMovementMode::CMOVE_Mantling:
+			{
+				InitialMantlingLocation = GetActorLocation();
+				InitialMantlingRotation = GetOwner()->GetActorRotation();
+				TargetMantlingTime = 0.25f;
+				GetWorld()->GetTimerManager().SetTimer(MantlingTimer, this, &UHWBaseCharacterMovementComponent::EndMantle, TargetMantlingTime, false);
+				break;
+			}
+		default:
+			break;
+		}
 	}
 }
 

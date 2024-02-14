@@ -17,6 +17,7 @@ class HOMEWORK_API AHWBaseCharacter : public ACharacter
 public:
 	AHWBaseCharacter(const FObjectInitializer& ObjectInitializer);
 
+	virtual void BeginPlay() override;
 	virtual void MoveForward(float Value) {};
 	virtual void MoveRight(float Value) {};
 	virtual void Turn(float Value) {};
@@ -38,10 +39,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void Mantle();
-	virtual void BeginPlay() override;
+	virtual bool CanJumpInternal_Implementation() const override;
 
-
-	FORCEINLINE UHWBaseCharacterMovementComponent* GetBaseCharacterMovementComponent() { return HWBaseCharacterMovementComponent; }
+	FORCEINLINE UHWBaseCharacterMovementComponent* GetBaseCharacterMovementComponent() const { return HWBaseCharacterMovementComponent; }
 
 	//IK
 	UFUNCTION(BlueprintCallable, BlueprintPure)
