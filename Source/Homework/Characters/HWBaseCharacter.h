@@ -7,6 +7,30 @@
 #include "Components/CapsuleComponent.h"
 #include "HWBaseCharacter.generated.h"
 
+USTRUCT(BlueprintType)
+struct FMantlingSettings
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	class UAnimMontage* MantlingMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	class UCurveVector* MantlingCurve;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float MaxHeight = 200.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float MinHeight = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float MaxHeightStartTime = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float MinHeightStartTime = 0.5f;
+};
+
 class UHWBaseCharacterMovementComponent;
 
 UCLASS(Abstract, NotBlueprintable)
@@ -55,7 +79,6 @@ public:
 	//  UFUNCTION(BlueprintNativeEvent, Category = "Character | Movement")
 	void OnStartProne(float HeightAdjust, float ScaledHeightAdjust);
 
-
 protected:
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Character | Movement")
@@ -77,9 +100,10 @@ protected:
 
 	virtual bool CanSprint();
 
-
 	UHWBaseCharacterMovementComponent* HWBaseCharacterMovementComponent;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Movement | Mantling")
+	FMantlingSettings HighMantleSettings;
 
 private:
 	bool bIsSprintRequested = false;
