@@ -128,6 +128,8 @@ void AHWBaseCharacter::Mantle()
 		FVector2D TargetRange(HighMantleSettings.MinHeightStartTime, HighMantleSettings.MaxHeightStartTime);
         MantlingParameters.StartTime = FMath::GetMappedRangeValueClamped(SourceRange, TargetRange, MantlingHeight);
 
+        MantlingParameters.InitialAnimationLocation = MantlingParameters.TargetLocation - HighMantleSettings.AnimationCorrectionZ * FVector::UpVector + HighMantleSettings.AnimationCorrectionXY * LedgeDescription.LedgeNormal;
+
         GetBaseCharacterMovementComponent()->StartMantle(MantlingParameters);
 
         UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
