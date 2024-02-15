@@ -109,7 +109,13 @@ protected:
 	UHWBaseCharacterMovementComponent* HWBaseCharacterMovementComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Movement | Mantling")
-	FMantlingSettings HighMantleSettings;
+	FMantlingSettings HighMantlingSettings;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Movement | Mantling")
+	FMantlingSettings LowMantlingSettings;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character | Movement | Mantling", meta = (ClampMin = 0.0f, UIMin = 0.0f))
+	float LowMantleMaxHeight = 125.0f;
 
 private:
 	bool bIsSprintRequested = false;
@@ -160,6 +166,8 @@ private:
 	float GetIKOffsetForASocket(const FName& SocketName);
 
 	float CurrentStamina;
+
+	const FMantlingSettings& GetMantlingSettings(float LedgeHeight) const;
 };
 
 
