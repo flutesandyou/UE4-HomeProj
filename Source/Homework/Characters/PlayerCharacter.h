@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "HWBaseCharacter.h"
 #include "Components/TimelineComponent.h"
+#include "../Components/MovementComponents/HWBaseCharacterMovementComponent.h"
 #include "PlayerCharacter.generated.h"
 
 /**

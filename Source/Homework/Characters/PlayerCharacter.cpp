@@ -126,7 +126,11 @@ void APlayerCharacter::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeigh
 
 bool APlayerCharacter::CanJumpInternal_Implementation() const
 {
-    return bIsCrouched || Super::CanJumpInternal_Implementation();
+	if (!GetBaseCharacterMovementComponent()->IsMantling())
+	{
+		return bIsCrouched || Super::CanJumpInternal_Implementation();
+	}
+	return false;
 }
 
 void APlayerCharacter::OnJumped_Implementation()

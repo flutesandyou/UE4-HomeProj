@@ -19,6 +19,8 @@ struct FLedgeDescription
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ledge description")
 	FVector LedgeNormal;
+
+	FVector DownwardTraceHitResult;
 };
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))

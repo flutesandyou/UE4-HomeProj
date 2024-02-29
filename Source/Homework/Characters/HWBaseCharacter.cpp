@@ -56,6 +56,16 @@ void AHWBaseCharacter::ChangeProneState()
     }
 }
 
+void AHWBaseCharacter::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
+{
+    if (bWantsToMantle)
+    {
+        StartMantle();
+        bWantsToMantle = false;
+    }
+    Super::OnEndCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
+}
+
 void AHWBaseCharacter::StartSprint()
 {
     bIsSprintRequested = true;
@@ -103,7 +113,13 @@ void AHWBaseCharacter::Tick(float DeltaTime)
 
 void AHWBaseCharacter::Mantle()
 {
-    if (!GetBaseCharacterMovementComponent()->IsMantling())
+    bWantsToMantle = true;
+    StartMantle();
+}
+
+void AHWBaseCharacter::StartMantle()
+{
+    if (!GetBaseCharacterMovementComponent()->IsMantling() && !GetBaseCharacterMovementComponent()->IsCrouching() && bWantsToMantle == true)
     { 
         FLedgeDescription LedgeDescription;
         if (LedgeDetectorComponent->DetectLedge(LedgeDescription))
@@ -113,8 +129,11 @@ void AHWBaseCharacter::Mantle()
 		    MantlingParameters.InitialRotation = GetActorRotation();
             MantlingParameters.TargetLocation = LedgeDescription.Location;
 		    MantlingParameters.TargetRotation = LedgeDescription.Rotation;
-        
-            float MantlingHeight = (MantlingParameters.TargetLocation - MantlingParameters.InitialLocation).Z;
+            FVector DownwardTraceHitResult = LedgeDescription.DownwardTraceHitResult;
+
+            FVector CharacterBottom = GetActorLocation() - GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * FVector::UpVector;
+
+            float MantlingHeight = DownwardTraceHitResult.Z - CharacterBottom.Z;
             const FMantlingSettings& MantlingSettings = GetMantlingSettings(MantlingHeight);
 
             float MinRange;
@@ -138,6 +157,8 @@ void AHWBaseCharacter::Mantle()
 
             UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
             AnimInstance->Montage_Play(MantlingSettings.MantlingMontage, 1.0f, EMontagePlayReturnType::Duration, MantlingParameters.StartTime);
+
+            bWantsToMantle = false;
         }
     }
 }

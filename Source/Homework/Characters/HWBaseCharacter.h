@@ -56,6 +56,7 @@ public:
 	virtual void LookUpAtRate(float Value) {};
 	virtual void ChangeCrouchState();
 	virtual void ChangeProneState();
+	virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 
 	virtual void StartSprint();
 	virtual void StopSprint();
@@ -69,6 +70,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void Mantle();
+	virtual void StartMantle();
 	virtual bool CanJumpInternal_Implementation() const override;
 
 	FORCEINLINE UHWBaseCharacterMovementComponent* GetBaseCharacterMovementComponent() const { return HWBaseCharacterMovementComponent; }
@@ -119,6 +121,7 @@ protected:
 
 private:
 	bool bIsSprintRequested = false;
+	bool bWantsToMantle = false;
 	void TryChangeSprintState(float DeltaTime);
 	void TryChangeStaminaState(float DeltaTime);
 
