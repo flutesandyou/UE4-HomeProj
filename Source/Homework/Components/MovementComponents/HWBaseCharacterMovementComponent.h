@@ -11,7 +11,7 @@ struct FMantlingMovementParameters
 {
 	FVector InitialLocation = FVector::ZeroVector;
 	FRotator InitialRotation = FRotator::ZeroRotator;
-
+	UPrimitiveComponent* HitComponent = nullptr;
 	FVector TargetLocation = FVector::ZeroVector;
 	FRotator TargetRotation= FRotator::ZeroRotator;
 

@@ -21,6 +21,8 @@ struct FLedgeDescription
 	FVector LedgeNormal;
 
 	FVector DownwardTraceHitResult;
+
+	UPrimitiveComponent* HitComponent = nullptr;
 };
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))

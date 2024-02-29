@@ -125,10 +125,11 @@ void AHWBaseCharacter::StartMantle()
         if (LedgeDetectorComponent->DetectLedge(LedgeDescription))
         {
             FMantlingMovementParameters MantlingParameters;
-            MantlingParameters.InitialLocation = GetActorLocation();
-		    MantlingParameters.InitialRotation = GetActorRotation();
-            MantlingParameters.TargetLocation = LedgeDescription.Location;
-		    MantlingParameters.TargetRotation = LedgeDescription.Rotation;
+            MantlingParameters.InitialLocation = GetActorLocation() - LedgeDescription.HitComponent->GetComponentLocation();
+		    MantlingParameters.InitialRotation = GetActorRotation() - LedgeDescription.HitComponent->GetComponentRotation();
+            MantlingParameters.TargetLocation = LedgeDescription.Location - LedgeDescription.HitComponent->GetComponentLocation();
+		    MantlingParameters.TargetRotation = LedgeDescription.Rotation - LedgeDescription.HitComponent->GetComponentRotation();
+            MantlingParameters.HitComponent = LedgeDescription.HitComponent;
             FVector DownwardTraceHitResult = LedgeDescription.DownwardTraceHitResult;
 
             FVector CharacterBottom = GetActorLocation() - GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * FVector::UpVector;

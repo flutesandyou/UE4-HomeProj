@@ -79,6 +79,9 @@ void UHWBaseCharacterMovementComponent::PhysCustom(float DeltaTime, int32 Iterat
 
 			FVector NewLocation = FMath::Lerp(CorrectedInitialLocation, CurrentMantlingParameters.TargetLocation, PositionAlpha);
 			FRotator NewRotation = FMath::Lerp(CurrentMantlingParameters.InitialRotation, CurrentMantlingParameters.TargetRotation, PositionAlpha);
+			
+			NewLocation += CurrentMantlingParameters.HitComponent->GetComponentLocation();
+			NewRotation += CurrentMantlingParameters.HitComponent->GetComponentRotation();
 
 			FVector Delta =  NewLocation - GetActorLocation();
 
