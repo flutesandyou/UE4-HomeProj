@@ -20,6 +20,8 @@ void ULedgeDetectorComponent::BeginPlay()
 bool ULedgeDetectorComponent::DetectLedge(OUT FLedgeDescription& LedgeDescription)
 {
 	UCapsuleComponent* OwnerCapsuleComponent = CachedCharacterOwner->GetCapsuleComponent();
+	// Orig capsule size to fix water case
+	UCapsuleComponent* DefaultCapsuleComponent = CachedCharacterOwner->GetClass()->GetDefaultObject<ACharacter>()->GetCapsuleComponent();
 
 	FCollisionQueryParams QueryParams;
 	QueryParams.bTraceComplex = true;
@@ -66,8 +68,8 @@ bool ULedgeDetectorComponent::DetectLedge(OUT FLedgeDescription& LedgeDescriptio
 	}
 
 	// 3. Overlap check
-	float OverlapCapsuleRadius = OwnerCapsuleComponent->GetScaledCapsuleRadius();
-	float OverlapCapsuleHalfHeight = OwnerCapsuleComponent->GetScaledCapsuleHalfHeight();
+	float OverlapCapsuleRadius = DefaultCapsuleComponent->GetScaledCapsuleRadius();
+	float OverlapCapsuleHalfHeight = DefaultCapsuleComponent->GetScaledCapsuleHalfHeight();
 	float OverlapCapsuleFloorOffset = 2.0f;
 	FVector OverlapLocation = DownwardTraceHitResult.ImpactPoint + (OverlapCapsuleHalfHeight + OverlapCapsuleFloorOffset) * FVector::UpVector;
 
