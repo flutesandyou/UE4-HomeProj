@@ -57,7 +57,8 @@ public:
 
 	// ladder
 	void AttachToLadder(const class ALadder* Ladder);
-	float GetActorToCurrentLadderProjection(const FVector& Location);
+	float GetActorToCurrentLadderProjection(const FVector& Location) const;
+	float GetLadderSpeedRatio() const;
 	void DetachFromLadder();
 	bool IsOnLadder() const;
 	const class ALadder* GetCurrentLadder();

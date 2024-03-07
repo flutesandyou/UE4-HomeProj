@@ -83,13 +83,21 @@ void UHWBaseCharacterMovementComponent::AttachToLadder(const ALadder* Ladder)
 	SetMovementMode(MOVE_Custom, (uint8)ECustomMovementMode::CMOVE_Ladder);
 }
 
-float UHWBaseCharacterMovementComponent::GetActorToCurrentLadderProjection(const FVector& Location)
+float UHWBaseCharacterMovementComponent::GetActorToCurrentLadderProjection(const FVector& Location) const
 {
 	checkf(IsValid(CurrentLadder), TEXT("UHWBaseCharacterMovementComponent::GetActorToCurrentLadderProjection() cannot be invoked when CurrentLadder is null"))
 
 	FVector LadderUpVector = CurrentLadder->GetActorUpVector();
 	FVector LadderToCharacterDistance = Location - CurrentLadder->GetActorLocation();
 	return FVector::DotProduct(LadderUpVector, LadderToCharacterDistance);
+}
+
+float UHWBaseCharacterMovementComponent::GetLadderSpeedRatio() const
+{
+	checkf(IsValid(CurrentLadder), TEXT("UHWBaseCharacterMovementComponent::GetLadderSpeedRatio() cannot be invoked when CurrentLadder is null"))
+	FVector LadderUpVector = CurrentLadder->GetActorUpVector();
+
+	return FVector::DotProduct(LadderUpVector, Velocity) / ClimbingOnLadderMaxSpeed;
 }
 
 void UHWBaseCharacterMovementComponent::DetachFromLadder()

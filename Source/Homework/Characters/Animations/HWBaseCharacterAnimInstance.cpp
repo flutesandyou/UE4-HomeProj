@@ -26,11 +26,14 @@ void UHWBaseCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bIsFalling = CharacterMovement->IsFalling();
     bIsCrouching = CharacterMovement->IsCrouching();
     bIsSprinting = CharacterMovement->IsSprinting();
+	bIsOutOfStamina = CharacterMovement->IsOutOfStamina();
 	bIsProning = CharacterMovement->IsProning();
 	bIsSwimming = CharacterMovement->IsSwimming();
-
-	//Stamina
-	bIsOutOfStamina = CharacterMovement->IsOutOfStamina();
+	bIsOnLadder = CharacterMovement->IsOnLadder();
+	if (bIsOnLadder)
+	{
+		LadderSpeedRatio = CharacterMovement->GetLadderSpeedRatio();
+	}
     
     //IK
     RightFootEffectorLocation = FVector(CachedBaseCharacter->GetIKRightFootOffset() * -1.0f, 0.0f, 0.0f);
