@@ -18,6 +18,10 @@ float UHWBaseCharacterMovementComponent::GetMaxSpeed() const
 	{
 		Result = OutOfStaminaSpeed;
 	}
+	else if (IsOnLadder())
+	{
+		Result = ClimbingOnLadderMaxSpeed;
+	}
 
 	return Result;
 }
@@ -50,6 +54,27 @@ bool UHWBaseCharacterMovementComponent::IsMantling() const
 	return UpdatedComponent && MovementMode == MOVE_Custom && CustomMovementMode == (uint8)ECustomMovementMode::CMOVE_Mantling;
 }
 
+void UHWBaseCharacterMovementComponent::AttachToLadder(const ALadder* Ladder)
+{
+	CurrentLadder = Ladder;
+	SetMovementMode(MOVE_Custom, (uint8)ECustomMovementMode::CMOVE_Ladder);
+}
+
+void UHWBaseCharacterMovementComponent::DetachFromLadder()
+{
+	SetMovementMode(MOVE_Falling);
+}
+
+bool UHWBaseCharacterMovementComponent::IsOnLadder() const
+{
+	return UpdatedComponent && MovementMode == MOVE_Custom && CustomMovementMode == (uint8)ECustomMovementMode::CMOVE_Ladder;
+}
+
+const ALadder* UHWBaseCharacterMovementComponent::GetCurrentLadder()
+{
+	return CurrentLadder;
+}
+
 void UHWBaseCharacterMovementComponent::SetIsOutOfStamina(bool bIsOutOfStamina_In)
 {
 	bIsOutOfStamina = bIsOutOfStamina_In;
@@ -67,26 +92,12 @@ void UHWBaseCharacterMovementComponent::PhysCustom(float DeltaTime, int32 Iterat
 	{
 		case (uint8)ECustomMovementMode::CMOVE_Mantling:
 		{
-			float ElapsedTime = GetWorld()->GetTimerManager().GetTimerElapsed(MantlingTimer) + CurrentMantlingParameters.StartTime;
-			FVector MantlingCurveValue = CurrentMantlingParameters.MantlingCurve->GetVectorValue(ElapsedTime);
-			
-			float PositionAlpha = MantlingCurveValue.X;
-			float XYCorrectionAlpha = MantlingCurveValue.Y;
-			float ZCorrectionAlpha = MantlingCurveValue.Z;
-
-			FVector CorrectedInitialLocation = FMath::Lerp(CurrentMantlingParameters.InitialLocation, CurrentMantlingParameters.InitialAnimationLocation, XYCorrectionAlpha);
-			CorrectedInitialLocation.Z = FMath::Lerp(CurrentMantlingParameters.InitialLocation.Z, CurrentMantlingParameters.InitialAnimationLocation.Z, ZCorrectionAlpha);
-
-			FVector NewLocation = FMath::Lerp(CorrectedInitialLocation, CurrentMantlingParameters.TargetLocation, PositionAlpha);
-			FRotator NewRotation = FMath::Lerp(CurrentMantlingParameters.InitialRotation, CurrentMantlingParameters.TargetRotation, PositionAlpha);
-			
-			NewLocation += CurrentMantlingParameters.HitComponent->GetComponentLocation();
-			NewRotation += CurrentMantlingParameters.HitComponent->GetComponentRotation();
-
-			FVector Delta =  NewLocation - GetActorLocation();
-
-			FHitResult HitResult;
-			SafeMoveUpdatedComponent(Delta, NewRotation, false, HitResult);
+			PhysMantling(DeltaTime, Iterations);
+			break;
+		}
+		case (uint8)ECustomMovementMode::CMOVE_Ladder:
+		{
+			PhysLadder(DeltaTime, Iterations);
 			break;
 		}
 	default:
@@ -95,6 +106,39 @@ void UHWBaseCharacterMovementComponent::PhysCustom(float DeltaTime, int32 Iterat
 	
 
 	Super::PhysCustom(DeltaTime, Iterations);
+}
+
+void UHWBaseCharacterMovementComponent::PhysMantling(float DeltaTime, int32 Iterations)
+{
+	float ElapsedTime = GetWorld()->GetTimerManager().GetTimerElapsed(MantlingTimer) + CurrentMantlingParameters.StartTime;
+	FVector MantlingCurveValue = CurrentMantlingParameters.MantlingCurve->GetVectorValue(ElapsedTime);
+
+	float PositionAlpha = MantlingCurveValue.X;
+	float XYCorrectionAlpha = MantlingCurveValue.Y;
+	float ZCorrectionAlpha = MantlingCurveValue.Z;
+
+	FVector CorrectedInitialLocation = FMath::Lerp(CurrentMantlingParameters.InitialLocation, CurrentMantlingParameters.InitialAnimationLocation, XYCorrectionAlpha);
+	CorrectedInitialLocation.Z = FMath::Lerp(CurrentMantlingParameters.InitialLocation.Z, CurrentMantlingParameters.InitialAnimationLocation.Z, ZCorrectionAlpha);
+
+	FVector NewLocation = FMath::Lerp(CorrectedInitialLocation, CurrentMantlingParameters.TargetLocation, PositionAlpha);
+	FRotator NewRotation = FMath::Lerp(CurrentMantlingParameters.InitialRotation, CurrentMantlingParameters.TargetRotation, PositionAlpha);
+
+	NewLocation += CurrentMantlingParameters.HitComponent->GetComponentLocation();
+	NewRotation += CurrentMantlingParameters.HitComponent->GetComponentRotation();
+
+	FVector Delta = NewLocation - GetActorLocation();
+
+	FHitResult HitResult;
+	SafeMoveUpdatedComponent(Delta, NewRotation, false, HitResult);
+}
+
+void UHWBaseCharacterMovementComponent::PhysLadder(float DeltaTime, int32 Iterations)
+{
+	CalcVelocity(DeltaTime, 1.0f, false, ClimbingOnLadderBreakingDeceleration);
+	FVector Delta = Velocity * DeltaTime;
+
+	FHitResult HitResult;
+	SafeMoveUpdatedComponent(Delta, GetOwner()->GetActorRotation(), true, HitResult);
 }
 
 void UHWBaseCharacterMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
@@ -108,6 +152,11 @@ void UHWBaseCharacterMovementComponent::OnMovementModeChanged(EMovementMode Prev
 	{
 		ACharacter* DefaultCharacter = CharacterOwner->GetClass()->GetDefaultObject<ACharacter>();
 		CharacterOwner->GetCapsuleComponent()->SetCapsuleSize(DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleRadius(), DefaultCharacter->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight(), true);
+	}
+
+	if (PreviousMovementMode == MOVE_Custom && PreviousCustomMode == (uint8)ECustomMovementMode::CMOVE_Ladder)
+	{
+		CurrentLadder = nullptr;
 	}
 
 	if (MovementMode == MOVE_Custom)

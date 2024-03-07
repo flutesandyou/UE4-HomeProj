@@ -38,6 +38,8 @@ private:
 	void SwimForward(float Value);
 	void SwimRight(float Value);
 	void SwimUp(float Value);
+	void ClimbLadderUp(float Value);
+	void InteractWithLadder();
 
 	TSoftObjectPtr<AHWBaseCharacter> CachedBaseCharacter;
 };

@@ -48,6 +48,7 @@ public:
 	AHWBaseCharacter(const FObjectInitializer& ObjectInitializer);
 
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 	virtual void MoveForward(float Value) {};
 	virtual void MoveRight(float Value) {};
 	virtual void Turn(float Value) {};
@@ -66,9 +67,8 @@ public:
 	virtual void SwimRight(float Value) {};
 
 	virtual void SwimUp(float Value) {};
-
-	virtual void Tick(float DeltaTime) override;
-
+	virtual void ClimbLadderUp(float Value);
+	virtual void InteractWithLadder();
 	virtual void Mantle();
 	virtual void StartMantle();
 	virtual bool CanJumpInternal_Implementation() const override;
@@ -89,6 +89,7 @@ public:
 
 	void RegisterInteractiveActor(AInteractiveActor* InteractiveActor);
 	void UnregisterInteractiveActor(AInteractiveActor* InteractiveActor);
+	const class ALadder* GetAvailableLadder() const;
 
 protected:
 

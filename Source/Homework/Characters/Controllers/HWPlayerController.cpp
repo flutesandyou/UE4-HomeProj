@@ -23,11 +23,13 @@ void AHWPlayerController::SetupInputComponent()
 	InputComponent->BindAxis("SwimForward", this, &AHWPlayerController::SwimForward);
 	InputComponent->BindAxis("SwimRight", this, &AHWPlayerController::SwimRight);
 	InputComponent->BindAxis("SwimUp", this, &AHWPlayerController::SwimUp);
+	InputComponent->BindAxis("ClimbLadderUp", this, &AHWPlayerController::ClimbLadderUp);
+	InputComponent->BindAction("InteractWithLadder", EInputEvent::IE_Released, this, &AHWPlayerController::InteractWithLadder);
 	InputComponent->BindAction("Mantle", EInputEvent::IE_Pressed, this, &AHWPlayerController::Mantle);
 	InputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &AHWPlayerController::Jump);
 	InputComponent->BindAction("Crouch", EInputEvent::IE_Pressed, this, &AHWPlayerController::ChangeCrouchState);
     InputComponent->BindAction("Sprint", EInputEvent::IE_Pressed, this, &AHWPlayerController::StartSprint);
-    InputComponent->BindAction("Sprint", EInputEvent::IE_Released, this, &AHWPlayerController::StopSprint);
+	InputComponent->BindAction("Sprint", EInputEvent::IE_Released, this, &AHWPlayerController::StopSprint);
 }
 
 void AHWPlayerController::MoveForward(float Value)
@@ -147,5 +149,21 @@ void AHWPlayerController::SwimUp(float Value)
 	if (CachedBaseCharacter.IsValid())
 	{
 		CachedBaseCharacter->SwimUp(Value);
+	}
+}
+
+void AHWPlayerController::ClimbLadderUp(float Value)
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->ClimbLadderUp(Value);
+	}
+}
+
+void AHWPlayerController::InteractWithLadder()
+{
+	if (CachedBaseCharacter.IsValid())
+	{
+		CachedBaseCharacter->InteractWithLadder();
 	}
 }

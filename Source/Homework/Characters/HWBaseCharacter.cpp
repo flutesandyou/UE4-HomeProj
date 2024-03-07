@@ -7,6 +7,7 @@
 #include "../Components/LedgeDetectorComponents/LedgeDetectorComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Curves/CurveVector.h"
+#include "../Actors/Interactive/Environment/Ladder.h"
 
 AHWBaseCharacter::AHWBaseCharacter(const FObjectInitializer& ObjectInitializer)
     :Super(ObjectInitializer.SetDefaultSubobjectClass<UHWBaseCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
@@ -108,6 +109,31 @@ void AHWBaseCharacter::Tick(float DeltaTime)
     else if (HWBaseCharacterMovementComponent->bIsOutOfStamina == true)
     {
         GEngine->AddOnScreenDebugMessage(1, 1.0f, FColor::Red, FString::Printf(TEXT("Stamina: %.2f"), CurrentStamina));
+    }
+}
+
+void AHWBaseCharacter::ClimbLadderUp(float Value)
+{
+    if (GetBaseCharacterMovementComponent()->IsOnLadder() && !FMath::IsNearlyZero(Value))
+    {
+        FVector LadderUpVector = GetBaseCharacterMovementComponent()->GetCurrentLadder()->GetActorUpVector();
+        AddMovementInput(LadderUpVector, Value);
+    }
+}
+
+void AHWBaseCharacter::InteractWithLadder()
+{
+    if (GetBaseCharacterMovementComponent()->IsOnLadder())
+	{
+        GetBaseCharacterMovementComponent()->DetachFromLadder();
+	}
+    else
+    {
+        const ALadder* AvailableLadder = GetAvailableLadder();
+        if (IsValid(AvailableLadder))
+        {
+        GetBaseCharacterMovementComponent()->AttachToLadder(AvailableLadder);
+        }
     }
 }
 
@@ -215,6 +241,20 @@ void AHWBaseCharacter::RegisterInteractiveActor(AInteractiveActor* InteractiveAc
 void AHWBaseCharacter::UnregisterInteractiveActor(AInteractiveActor* InteractiveActor)
 {
     AvailableInteractiveActors.Remove(InteractiveActor);
+}
+
+const ALadder* AHWBaseCharacter::GetAvailableLadder() const
+{
+    const ALadder* Result = nullptr;
+    for (const AInteractiveActor* InteractiveActor : AvailableInteractiveActors)
+    {
+        if (InteractiveActor->IsA<ALadder>())
+        {
+            Result = StaticCast<const ALadder*>(InteractiveActor);
+            break;
+        }
+    }
+    return Result;
 }
 
 void AHWBaseCharacter::TryChangeSprintState(float DeltaTime)

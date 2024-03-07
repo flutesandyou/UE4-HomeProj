@@ -28,6 +28,7 @@ enum class ECustomMovementMode : uint8
 {
 	CMOVE_None = 0 UMETA(DisplayName = "None"),
 	CMOVE_Mantling UMETA(DisplayName = "Mantling"),
+	CMOVE_Ladder UMETA(DisplayName = "Ladder"),
 	CMOVE_Max UMETA(Hidden)
 };
 
@@ -53,6 +54,12 @@ public:
 	void EndMantle();
 	bool IsMantling() const;
 
+	// ladder
+	void AttachToLadder(const class ALadder* Ladder);
+	void DetachFromLadder();
+	bool IsOnLadder() const;
+	const class ALadder* GetCurrentLadder();
+
 	// proning
 	void Prone();
 	void UnProne();
@@ -75,6 +82,9 @@ protected:
 
 	virtual void PhysCustom(float DeltaTime, int32 Iterations) override;
 
+	void PhysMantling(float DeltaTime, int32 Iterations);
+	void PhysLadder(float DeltaTime, int32 Iterations);
+
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
 
 	UPROPERTY(Category = "Character Movement: Swimming", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
@@ -83,10 +93,17 @@ protected:
 	UPROPERTY(Category = "Character Movement: Swimming", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
 	float SwimmingCapsuleHalfHeigh = 60.0f;
 
+	UPROPERTY(Category = "Character Movement: Ladder", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
+	float ClimbingOnLadderMaxSpeed = 200.0f;
+	
+	UPROPERTY(Category = "Character Movement: Ladder", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
+	float ClimbingOnLadderBreakingDeceleration = 2048.0f;
+
 private:
 	bool bIsSprinting;
 	bool bIsProning;
 	
 	FMantlingMovementParameters CurrentMantlingParameters;
 	FTimerHandle MantlingTimer;
+	const ALadder* CurrentLadder = nullptr;
 };
