@@ -5,6 +5,16 @@
 #include "../../Characters/HWBaseCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Curves/CurveVector.h"
+#include "../../Actors/Interactive/Environment/Ladder.h"
+
+void UHWBaseCharacterMovementComponent::PhysicsRotation(float DeltaTime)
+{
+	if (IsOnLadder())
+	{
+		return;
+	}
+	Super::PhysicsRotation(DeltaTime);
+}
 
 float UHWBaseCharacterMovementComponent::GetMaxSpeed() const
 {
@@ -57,7 +67,29 @@ bool UHWBaseCharacterMovementComponent::IsMantling() const
 void UHWBaseCharacterMovementComponent::AttachToLadder(const ALadder* Ladder)
 {
 	CurrentLadder = Ladder;
+	
+	FRotator TargetOrientationRotation = CurrentLadder->GetActorForwardVector().ToOrientationRotator();
+	TargetOrientationRotation.Yaw += 180.0f;
+	
+	float Projection = GetActorToCurrentLadderProjection(GetActorLocation());
+
+	FVector LadderUpVector = CurrentLadder->GetActorUpVector();
+	FVector LadderForwardVector = CurrentLadder->GetActorForwardVector();
+	FVector NewCharacterLocation = CurrentLadder->GetActorLocation() + Projection * LadderUpVector + LadderToCharacterOffset * LadderForwardVector;
+	
+	GetOwner()->SetActorLocation(NewCharacterLocation);
+	GetOwner()->SetActorRelativeRotation(TargetOrientationRotation);
+	
 	SetMovementMode(MOVE_Custom, (uint8)ECustomMovementMode::CMOVE_Ladder);
+}
+
+float UHWBaseCharacterMovementComponent::GetActorToCurrentLadderProjection(const FVector& Location)
+{
+	checkf(IsValid(CurrentLadder), TEXT("UHWBaseCharacterMovementComponent::GetActorToCurrentLadderProjection() cannot be invoked when CurrentLadder is null"))
+
+	FVector LadderUpVector = CurrentLadder->GetActorUpVector();
+	FVector LadderToCharacterDistance = Location - CurrentLadder->GetActorLocation();
+	return FVector::DotProduct(LadderUpVector, LadderToCharacterDistance);
 }
 
 void UHWBaseCharacterMovementComponent::DetachFromLadder()
@@ -137,6 +169,19 @@ void UHWBaseCharacterMovementComponent::PhysLadder(float DeltaTime, int32 Iterat
 	CalcVelocity(DeltaTime, 1.0f, false, ClimbingOnLadderBreakingDeceleration);
 	FVector Delta = Velocity * DeltaTime;
 
+	FVector NewPos = GetActorLocation() + Delta;
+	float NewPosProjection = GetActorToCurrentLadderProjection(NewPos);
+	if (NewPosProjection < MinLadderBottomOffset)
+	{
+		DetachFromLadder();
+		return;
+	}
+	else if (NewPosProjection > (CurrentLadder->GetLadderHeight() - MaxLadderTopOffset))
+	{
+		GetBaseCharacterOwner()->Mantle();
+		return;
+	}
+
 	FHitResult HitResult;
 	SafeMoveUpdatedComponent(Delta, GetOwner()->GetActorRotation(), true, HitResult);
 }
@@ -172,6 +217,11 @@ void UHWBaseCharacterMovementComponent::OnMovementModeChanged(EMovementMode Prev
 			break;
 		}
 	}
+}
+
+AHWBaseCharacter* UHWBaseCharacterMovementComponent::GetBaseCharacterOwner() const
+{
+	return StaticCast<AHWBaseCharacter*>(CharacterOwner);
 }
 
 bool UHWBaseCharacterMovementComponent::CanAttemptJump() const

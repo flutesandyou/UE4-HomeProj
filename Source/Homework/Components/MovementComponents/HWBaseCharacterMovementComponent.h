@@ -40,6 +40,7 @@ class HOMEWORK_API UHWBaseCharacterMovementComponent : public UCharacterMovement
 	GENERATED_BODY()
 
 public:
+	virtual void PhysicsRotation(float DeltaTime) override;
 	FORCEINLINE bool IsSprinting() { return bIsSprinting; }
 	FORCEINLINE bool IsProning() { return bIsProning; }
 	virtual float GetMaxSpeed() const override;
@@ -56,6 +57,7 @@ public:
 
 	// ladder
 	void AttachToLadder(const class ALadder* Ladder);
+	float GetActorToCurrentLadderProjection(const FVector& Location);
 	void DetachFromLadder();
 	bool IsOnLadder() const;
 	const class ALadder* GetCurrentLadder();
@@ -95,9 +97,20 @@ protected:
 
 	UPROPERTY(Category = "Character Movement: Ladder", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
 	float ClimbingOnLadderMaxSpeed = 200.0f;
+
+	UPROPERTY(Category = "Character Movement: Ladder", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
+	float LadderToCharacterOffset = 60.0f;
 	
 	UPROPERTY(Category = "Character Movement: Ladder", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
 	float ClimbingOnLadderBreakingDeceleration = 2048.0f;
+
+	UPROPERTY(Category = "Character Movement: Ladder", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
+	float MaxLadderTopOffset = 90.0f;
+
+	UPROPERTY(Category = "Character Movement: Ladder", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
+	float MinLadderBottomOffset = 90.0f;
+
+	class AHWBaseCharacter* GetBaseCharacterOwner() const;
 
 private:
 	bool bIsSprinting;
