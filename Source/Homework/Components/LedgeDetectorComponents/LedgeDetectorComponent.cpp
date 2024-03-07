@@ -13,7 +13,6 @@ void ULedgeDetectorComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	checkf(GetOwner()->IsA<ACharacter>(), TEXT("ULedgeDetectorComponent::BeginPlay() only a character can use ULedgeDetectorComponent"));
-	// ...
 	CachedCharacterOwner = StaticCast<ACharacter*>(GetOwner());
 }
 
@@ -46,7 +45,7 @@ bool ULedgeDetectorComponent::DetectLedge(OUT FLedgeDescription& LedgeDescriptio
 
 	FHitResult ForwardTraceHitResult;
 	FVector ForwardTraceStartLocation = CharacterBottom + (MinimumLedgeHeight + ForwardTraceCapsuleHalfHeight) * FVector::UpVector;
-	FVector ForwardTraceEndLocation = ForwardTraceStartLocation + CachedCharacterOwner->GetActorForwardVector() * ForwardCheckDistance;
+	FVector ForwardTraceEndLocation = ForwardTraceStartLocation + CachedCharacterOwner->GetActorForwardVector() * ForwardTraceDistance;
 
 
 	if (!HWTraceUtils::SweepCapsuleSingleByChannel(GetWorld(), ForwardTraceHitResult, ForwardTraceStartLocation, ForwardTraceEndLocation, ForwardTraceCapsuleRadius, ForwardTraceCapsuleHalfHeight, FQuat::Identity, ECC_Climbing, QueryParams, FCollisionResponseParams::DefaultResponseParam, bIsDebugEnabled, DrawTime))

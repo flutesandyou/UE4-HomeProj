@@ -6,9 +6,6 @@
 #include "Engine/GameInstance.h"
 #include "HWGameInstance.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class HOMEWORK_API UHWGameInstance : public UGameInstance
 {

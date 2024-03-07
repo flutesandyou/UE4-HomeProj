@@ -37,8 +37,8 @@ struct FMantlingSettings
 	float MinHeightStartTime = 0.5f;
 };
 
+class AInteractiveActor;
 class UHWBaseCharacterMovementComponent;
-
 UCLASS(Abstract, NotBlueprintable)
 class HOMEWORK_API AHWBaseCharacter : public ACharacter
 {
@@ -87,6 +87,9 @@ public:
 	//  UFUNCTION(BlueprintNativeEvent, Category = "Character | Movement")
 	void OnStartProne(float HeightAdjust, float ScaledHeightAdjust);
 
+	void RegisterInteractiveActor(AInteractiveActor* InteractiveActor);
+	void UnregisterInteractiveActor(AInteractiveActor* InteractiveActor);
+
 protected:
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Character | Movement")
@@ -125,6 +128,7 @@ private:
 	void TryChangeSprintState(float DeltaTime);
 	void TryChangeStaminaState(float DeltaTime);
 
+	TArray<AInteractiveActor*> AvailableInteractiveActors;
 	//IK
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character")

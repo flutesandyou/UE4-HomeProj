@@ -207,6 +207,16 @@ void AHWBaseCharacter::OnStartProne(float HeightAdjust, float ScaledHeightAdjust
     }
 }
 
+void AHWBaseCharacter::RegisterInteractiveActor(AInteractiveActor* InteractiveActor)
+{
+    AvailableInteractiveActors.Add(InteractiveActor);
+}
+
+void AHWBaseCharacter::UnregisterInteractiveActor(AInteractiveActor* InteractiveActor)
+{
+    AvailableInteractiveActors.Remove(InteractiveActor);
+}
+
 void AHWBaseCharacter::TryChangeSprintState(float DeltaTime)
 {
     if (bIsSprintRequested && !HWBaseCharacterMovementComponent->IsSprinting() && CanSprint() && !HWBaseCharacterMovementComponent->IsFalling())

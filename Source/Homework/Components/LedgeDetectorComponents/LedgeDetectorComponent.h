@@ -43,7 +43,7 @@ protected:
 	float MaximumLedgeHeight = 200.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Detection settings", meta = (UIMin = 0.0f, ClampMin = 0.0f))
-	float ForwardCheckDistance = 100.0f;
+	float ForwardTraceDistance = 100.0f;
 
 private:
 	TWeakObjectPtr<class ACharacter> CachedCharacterOwner;
