@@ -77,6 +77,11 @@ void UHWBaseCharacterMovementComponent::AttachToLadder(const ALadder* Ladder)
 	FVector LadderForwardVector = CurrentLadder->GetActorForwardVector();
 	FVector NewCharacterLocation = CurrentLadder->GetActorLocation() + Projection * LadderUpVector + LadderToCharacterOffset * LadderForwardVector;
 	
+	if (CurrentLadder->GetIsOnTop())
+	{
+		NewCharacterLocation = CurrentLadder->GetAttachFromTopAnimMontageStartingLocation();
+	}
+
 	GetOwner()->SetActorLocation(NewCharacterLocation);
 	GetOwner()->SetActorRelativeRotation(TargetOrientationRotation);
 	
@@ -177,6 +182,13 @@ void UHWBaseCharacterMovementComponent::PhysLadder(float DeltaTime, int32 Iterat
 	CalcVelocity(DeltaTime, 1.0f, false, ClimbingOnLadderBreakingDeceleration);
 	FVector Delta = Velocity * DeltaTime;
 
+	if (HasAnimRootMotion())
+	{
+		FHitResult HitResult;
+		SafeMoveUpdatedComponent(Delta, GetOwner()->GetActorRotation(), false, HitResult);
+		return;
+	}
+
 	FVector NewPos = GetActorLocation() + Delta;
 	float NewPosProjection = GetActorToCurrentLadderProjection(NewPos);
 	if (NewPosProjection < MinLadderBottomOffset)
@@ -186,7 +198,7 @@ void UHWBaseCharacterMovementComponent::PhysLadder(float DeltaTime, int32 Iterat
 	}
 	else if (NewPosProjection > (CurrentLadder->GetLadderHeight() - MaxLadderTopOffset))
 	{
-		GetBaseCharacterOwner()->Mantle();
+		GetBaseCharacterOwner()->Mantle(true);
 		return;
 	}
 

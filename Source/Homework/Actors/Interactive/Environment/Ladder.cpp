@@ -23,13 +23,27 @@ ALadder::ALadder()
 
 	InteractionVolume->SetCollisionProfileName(CollisionProfilePawnInteractionVolume);
 	InteractionVolume->SetGenerateOverlapEvents(true);
+
+	TopInteractionVolume = CreateDefaultSubobject <UBoxComponent>(TEXT("TopInteractionVolume"));
+	TopInteractionVolume->SetupAttachment(RootComponent);
+
+	TopInteractionVolume->SetCollisionProfileName(CollisionProfilePawnInteractionVolume);
+	TopInteractionVolume->SetGenerateOverlapEvents(true);
+
+}
+
+void ALadder::BeginPlay()
+{
+	Super::BeginPlay();
+	TopInteractionVolume->OnComponentBeginOverlap.AddDynamic(this, &ALadder::OnInteractionVolumeBeginOverlap);
+	TopInteractionVolume->OnComponentEndOverlap.AddDynamic(this, &ALadder::OnInteractionVolumeEndOverlap);
 }
 
 void ALadder::OnConstruction(const FTransform& Transform)
 {
 	LeftRailMeshComponent->SetRelativeLocation(FVector(0.0f, -LadderWidth * 0.5f, LadderHeight * 0.5f));
 	RightRailMeshComponent->SetRelativeLocation(FVector(0.0f, LadderWidth * 0.5f, LadderHeight * 0.5f));
-	
+
 	UStaticMesh* LeftRailMesh = LeftRailMeshComponent->GetStaticMesh();
 	if (IsValid(LeftRailMesh))
 	{
@@ -71,9 +85,57 @@ void ALadder::OnConstruction(const FTransform& Transform)
 	float BoxDepthExtent = GetLadderInteractionBox()->GetScaledBoxExtent().X;
 	GetLadderInteractionBox()->SetBoxExtent(FVector(BoxDepthExtent, LadderWidth * 0.5f, LadderHeight * 0.5f));
 	GetLadderInteractionBox()->SetRelativeLocation(FVector(BoxDepthExtent, 0.0f, LadderHeight * 0.5f));
+
+	FVector TopBoxExtent = TopInteractionVolume->GetUnscaledBoxExtent();
+	TopInteractionVolume->SetBoxExtent(FVector(TopBoxExtent.X, LadderWidth * 0.5f, TopBoxExtent.Z));
+	TopInteractionVolume->SetRelativeLocation(FVector(-TopBoxExtent.X, 0.0f, LadderHeight + TopBoxExtent.Z));
+}
+
+UAnimMontage* ALadder::GetAttachFromTopAnimMontage() const
+{
+	return AttachFromTopAnimMontage;
+}
+
+FVector ALadder::GetAttachFromTopAnimMontageStartingLocation() const
+{
+	FRotator OrientationRotation = GetActorForwardVector().ToOrientationRotator();
+	FVector Offset = OrientationRotation.RotateVector(AnimMontageInitialOffset);
+
+	FVector LadderTop = GetActorLocation() + GetActorUpVector() * LadderHeight;
+	return LadderTop + Offset;
 }
 
 UBoxComponent* ALadder::GetLadderInteractionBox() const
 {
 	return StaticCast<UBoxComponent*>(InteractionVolume);
+}
+
+void ALadder::OnInteractionVolumeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	Super::OnInteractionVolumeBeginOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
+
+	if (!IsOverlappingCharacterCapsule(OtherActor, OtherComp))
+	{
+		return;
+	}
+
+	if (OverlappedComponent == TopInteractionVolume)
+	{
+		bIsOnTop = true;
+	}
+}
+
+void ALadder::OnInteractionVolumeEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	Super::OnInteractionVolumeEndOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex);
+
+	if (!IsOverlappingCharacterCapsule(OtherActor, OtherComp))
+	{
+		return;
+	}
+
+	if (OverlappedComponent == TopInteractionVolume)
+	{
+		bIsOnTop = false;
+	}
 }

@@ -132,13 +132,21 @@ void AHWBaseCharacter::InteractWithLadder()
         const ALadder* AvailableLadder = GetAvailableLadder();
         if (IsValid(AvailableLadder))
         {
-        GetBaseCharacterMovementComponent()->AttachToLadder(AvailableLadder);
+            if (AvailableLadder->GetIsOnTop())
+            {
+                PlayAnimMontage(AvailableLadder->GetAttachFromTopAnimMontage());
+            }
+            GetBaseCharacterMovementComponent()->AttachToLadder(AvailableLadder);
         }
     }
 }
 
-void AHWBaseCharacter::Mantle()
+void AHWBaseCharacter::Mantle(bool bForce)
 {
+    if (!(CanMantle() || bForce))
+    {
+        return;
+    }
     bWantsToMantle = true;
     StartMantle();
 }
@@ -201,6 +209,11 @@ void AHWBaseCharacter::BeginPlay()
     CurrentStamina = MaxStamina;
 }
 
+bool AHWBaseCharacter::CanMantle() const
+{
+    return !GetBaseCharacterMovementComponent()->IsOnLadder();
+}
+
 void AHWBaseCharacter::OnSprintStart_Implementation()
 {
     UE_LOG(LogTemp, Log, TEXT("AHWBaseCharacter::OnSprintStart_Implementation()"))
@@ -235,12 +248,12 @@ void AHWBaseCharacter::OnStartProne(float HeightAdjust, float ScaledHeightAdjust
 
 void AHWBaseCharacter::RegisterInteractiveActor(AInteractiveActor* InteractiveActor)
 {
-    AvailableInteractiveActors.Add(InteractiveActor);
+    AvailableInteractiveActors.AddUnique(InteractiveActor);
 }
 
 void AHWBaseCharacter::UnregisterInteractiveActor(AInteractiveActor* InteractiveActor)
 {
-    AvailableInteractiveActors.Remove(InteractiveActor);
+    AvailableInteractiveActors.RemoveSingleSwap(InteractiveActor);
 }
 
 const ALadder* AHWBaseCharacter::GetAvailableLadder() const

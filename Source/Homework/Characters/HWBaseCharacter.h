@@ -39,6 +39,7 @@ struct FMantlingSettings
 
 class AInteractiveActor;
 class UHWBaseCharacterMovementComponent;
+
 UCLASS(Abstract, NotBlueprintable)
 class HOMEWORK_API AHWBaseCharacter : public ACharacter
 {
@@ -69,7 +70,7 @@ public:
 	virtual void SwimUp(float Value) {};
 	virtual void ClimbLadderUp(float Value);
 	virtual void InteractWithLadder();
-	virtual void Mantle();
+	virtual void Mantle(bool bForce = false);
 	virtual void StartMantle();
 	virtual bool CanJumpInternal_Implementation() const override;
 
@@ -93,6 +94,7 @@ public:
 
 protected:
 
+	bool CanMantle() const;
 	UFUNCTION(BlueprintNativeEvent, Category = "Character | Movement")
 	void OnSprintStart();
 	virtual void OnSprintStart_Implementation();
