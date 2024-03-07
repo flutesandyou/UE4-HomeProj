@@ -67,3 +67,19 @@ bool HWTraceUtils::OverlapCapsuleAnyByProfile(const UWorld* World, const FVector
 
 	return bResult;
 }
+
+bool HWTraceUtils::OverlapCapsuleBlockingByProfile(const UWorld* World, const FVector& Pos, float CapsuleRadius, float CapsuleHalfHeight, FQuat Rot, FName ProfileName, const FCollisionQueryParams& QueryParams, bool bDrawDebug, float DrawTime, FColor HitColor)
+{
+	bool bResult = false;
+	FCollisionShape CollisionShape = FCollisionShape::MakeCapsule(CapsuleRadius, CapsuleHalfHeight);
+	bResult = World->OverlapBlockingTestByProfile(Pos, Rot, ProfileName, CollisionShape, QueryParams);
+
+#if ENABLE_DRAW_DEBUG
+	if (bDrawDebug && bResult)
+	{
+		DrawDebugCapsule(World, Pos, CapsuleHalfHeight, CapsuleRadius, Rot, HitColor, false, DrawTime);
+	}
+#endif
+
+	return bResult;
+}
