@@ -39,6 +39,7 @@ struct FMantlingSettings
 
 class AInteractiveActor;
 class UHWBaseCharacterMovementComponent;
+typedef TArray<AInteractiveActor*, TInlineAllocator<10>> TInteractiveActorsArray;
 
 UCLASS(Abstract, NotBlueprintable)
 class HOMEWORK_API AHWBaseCharacter : public ACharacter
@@ -131,7 +132,7 @@ private:
 	void TryChangeSprintState(float DeltaTime);
 	void TryChangeStaminaState(float DeltaTime);
 
-	TArray<AInteractiveActor*> AvailableInteractiveActors;
+	TInteractiveActorsArray AvailableInteractiveActors;
 	//IK
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character")
