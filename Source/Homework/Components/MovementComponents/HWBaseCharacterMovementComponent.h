@@ -32,6 +32,15 @@ enum class ECustomMovementMode : uint8
 	CMOVE_Max UMETA(Hidden)
 };
 
+UENUM(BlueprintType)
+enum class EDetachFromLadderMethod : uint8
+{
+	Fall = 0,
+	ReachingTop,
+	ReachingBottom,
+	JumpOff
+};
+
 class AHWBaseCharacter;
 
 UCLASS()
@@ -59,7 +68,7 @@ public:
 	void AttachToLadder(const class ALadder* Ladder);
 	float GetActorToCurrentLadderProjection(const FVector& Location) const;
 	float GetLadderSpeedRatio() const;
-	void DetachFromLadder();
+	void DetachFromLadder(EDetachFromLadderMethod DetachFromLadderMethod = EDetachFromLadderMethod::Fall);
 	bool IsOnLadder() const;
 	const class ALadder* GetCurrentLadder();
 
@@ -111,6 +120,9 @@ protected:
 	UPROPERTY(Category = "Character Movement: Ladder", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
 	float MinLadderBottomOffset = 90.0f;
 
+	UPROPERTY(Category = "Character Movement: Ladder", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
+	float JumpOffFromLadderSpeed = 500.0f;
+
 	class AHWBaseCharacter* GetBaseCharacterOwner() const;
 
 private:
@@ -120,4 +132,8 @@ private:
 	FMantlingMovementParameters CurrentMantlingParameters;
 	FTimerHandle MantlingTimer;
 	const ALadder* CurrentLadder = nullptr;
+
+	FRotator ForceTargetRotation = FRotator::ZeroRotator;
+	bool bForceRotation = false;
+
 };

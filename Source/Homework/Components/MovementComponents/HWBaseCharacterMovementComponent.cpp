@@ -9,6 +9,50 @@
 
 void UHWBaseCharacterMovementComponent::PhysicsRotation(float DeltaTime)
 {
+	if (bForceRotation)
+	{
+		FRotator CurrentRotation = UpdatedComponent->GetComponentRotation(); // Normalized
+		CurrentRotation.DiagnosticCheckNaN(TEXT("CharacterMovementComponent::PhysicsRotation(): CurrentRotation"));
+
+		FRotator DeltaRot = GetDeltaRotation(DeltaTime);
+		DeltaRot.DiagnosticCheckNaN(TEXT("CharacterMovementComponent::PhysicsRotation(): GetDeltaRotation"));
+
+		// Accumulate a desired new rotation.
+		const float AngleTolerance = 1e-3f;
+
+		if (!CurrentRotation.Equals(ForceTargetRotation, AngleTolerance))
+		{
+			FRotator DesiredRotation = ForceTargetRotation;
+			// PITCH
+			if (!FMath::IsNearlyEqual(CurrentRotation.Pitch, DesiredRotation.Pitch, AngleTolerance))
+			{
+				DesiredRotation.Pitch = FMath::FixedTurn(CurrentRotation.Pitch, DesiredRotation.Pitch, DeltaRot.Pitch);
+			}
+
+			// YAW
+			if (!FMath::IsNearlyEqual(CurrentRotation.Yaw, DesiredRotation.Yaw, AngleTolerance))
+			{
+				DesiredRotation.Yaw = FMath::FixedTurn(CurrentRotation.Yaw, DesiredRotation.Yaw, DeltaRot.Yaw);
+			}
+
+			// ROLL
+			if (!FMath::IsNearlyEqual(CurrentRotation.Roll, DesiredRotation.Roll, AngleTolerance))
+			{
+				DesiredRotation.Roll = FMath::FixedTurn(CurrentRotation.Roll, DesiredRotation.Roll, DeltaRot.Roll);
+			}
+
+			// Set the new rotation.
+			DesiredRotation.DiagnosticCheckNaN(TEXT("CharacterMovementComponent::PhysicsRotation(): DesiredRotation"));
+			MoveUpdatedComponent(FVector::ZeroVector, DesiredRotation, /*bSweep*/ false);
+		}
+		else
+		{
+			ForceTargetRotation = FRotator::ZeroRotator;
+			bForceRotation = false;
+		}
+		return;
+	}
+
 	if (IsOnLadder())
 	{
 		return;
@@ -67,16 +111,16 @@ bool UHWBaseCharacterMovementComponent::IsMantling() const
 void UHWBaseCharacterMovementComponent::AttachToLadder(const ALadder* Ladder)
 {
 	CurrentLadder = Ladder;
-	
+
 	FRotator TargetOrientationRotation = CurrentLadder->GetActorForwardVector().ToOrientationRotator();
 	TargetOrientationRotation.Yaw += 180.0f;
-	
+
 	float Projection = GetActorToCurrentLadderProjection(GetActorLocation());
 
 	FVector LadderUpVector = CurrentLadder->GetActorUpVector();
 	FVector LadderForwardVector = CurrentLadder->GetActorForwardVector();
 	FVector NewCharacterLocation = CurrentLadder->GetActorLocation() + Projection * LadderUpVector + LadderToCharacterOffset * LadderForwardVector;
-	
+
 	if (CurrentLadder->GetIsOnTop())
 	{
 		NewCharacterLocation = CurrentLadder->GetAttachFromTopAnimMontageStartingLocation();
@@ -84,7 +128,7 @@ void UHWBaseCharacterMovementComponent::AttachToLadder(const ALadder* Ladder)
 
 	GetOwner()->SetActorLocation(NewCharacterLocation);
 	GetOwner()->SetActorRelativeRotation(TargetOrientationRotation);
-	
+
 	SetMovementMode(MOVE_Custom, (uint8)ECustomMovementMode::CMOVE_Ladder);
 }
 
@@ -92,7 +136,7 @@ float UHWBaseCharacterMovementComponent::GetActorToCurrentLadderProjection(const
 {
 	checkf(IsValid(CurrentLadder), TEXT("UHWBaseCharacterMovementComponent::GetActorToCurrentLadderProjection() cannot be invoked when CurrentLadder is null"))
 
-	FVector LadderUpVector = CurrentLadder->GetActorUpVector();
+		FVector LadderUpVector = CurrentLadder->GetActorUpVector();
 	FVector LadderToCharacterDistance = Location - CurrentLadder->GetActorLocation();
 	return FVector::DotProduct(LadderUpVector, LadderToCharacterDistance);
 }
@@ -100,14 +144,47 @@ float UHWBaseCharacterMovementComponent::GetActorToCurrentLadderProjection(const
 float UHWBaseCharacterMovementComponent::GetLadderSpeedRatio() const
 {
 	checkf(IsValid(CurrentLadder), TEXT("UHWBaseCharacterMovementComponent::GetLadderSpeedRatio() cannot be invoked when CurrentLadder is null"))
-	FVector LadderUpVector = CurrentLadder->GetActorUpVector();
+		FVector LadderUpVector = CurrentLadder->GetActorUpVector();
 
 	return FVector::DotProduct(LadderUpVector, Velocity) / ClimbingOnLadderMaxSpeed;
 }
 
-void UHWBaseCharacterMovementComponent::DetachFromLadder()
+void UHWBaseCharacterMovementComponent::DetachFromLadder(EDetachFromLadderMethod DetachFromLadderMethod)
 {
-	SetMovementMode(MOVE_Falling);
+	switch (DetachFromLadderMethod)
+	{
+	case EDetachFromLadderMethod::JumpOff:
+	{
+		FVector JumpDirection = CurrentLadder->GetActorForwardVector();
+		SetMovementMode(MOVE_Falling);
+		
+		FVector JumpVelocity = JumpDirection * JumpOffFromLadderSpeed;
+		
+		ForceTargetRotation = JumpDirection.ToOrientationRotator();
+		bForceRotation = true;
+
+		Launch(JumpVelocity);
+		break;
+	}
+	case EDetachFromLadderMethod::ReachingTop:
+	{
+		GetBaseCharacterOwner()->Mantle(true);
+		break;
+	}
+	case EDetachFromLadderMethod::ReachingBottom:
+	{
+		SetMovementMode(MOVE_Walking);
+		break;
+	}
+	case EDetachFromLadderMethod::Fall:
+	default:
+	{
+		SetMovementMode(MOVE_Falling);
+		break;
+	}
+
+	}
+
 }
 
 bool UHWBaseCharacterMovementComponent::IsOnLadder() const
@@ -127,7 +204,7 @@ void UHWBaseCharacterMovementComponent::SetIsOutOfStamina(bool bIsOutOfStamina_I
 	if (bIsOutOfStamina == true)
 	{
 		StopSprint();
-		
+
 	}
 }
 
@@ -135,20 +212,20 @@ void UHWBaseCharacterMovementComponent::PhysCustom(float DeltaTime, int32 Iterat
 {
 	switch (CustomMovementMode)
 	{
-		case (uint8)ECustomMovementMode::CMOVE_Mantling:
-		{
-			PhysMantling(DeltaTime, Iterations);
-			break;
-		}
-		case (uint8)ECustomMovementMode::CMOVE_Ladder:
-		{
-			PhysLadder(DeltaTime, Iterations);
-			break;
-		}
+	case (uint8)ECustomMovementMode::CMOVE_Mantling:
+	{
+		PhysMantling(DeltaTime, Iterations);
+		break;
+	}
+	case (uint8)ECustomMovementMode::CMOVE_Ladder:
+	{
+		PhysLadder(DeltaTime, Iterations);
+		break;
+	}
 	default:
 		break;
 	}
-	
+
 
 	Super::PhysCustom(DeltaTime, Iterations);
 }
@@ -191,14 +268,15 @@ void UHWBaseCharacterMovementComponent::PhysLadder(float DeltaTime, int32 Iterat
 
 	FVector NewPos = GetActorLocation() + Delta;
 	float NewPosProjection = GetActorToCurrentLadderProjection(NewPos);
+
 	if (NewPosProjection < MinLadderBottomOffset)
 	{
-		DetachFromLadder();
+		DetachFromLadder(EDetachFromLadderMethod::ReachingBottom);
 		return;
 	}
 	else if (NewPosProjection > (CurrentLadder->GetLadderHeight() - MaxLadderTopOffset))
 	{
-		GetBaseCharacterOwner()->Mantle(true);
+		DetachFromLadder(EDetachFromLadderMethod::ReachingTop);
 		return;
 	}
 
@@ -228,11 +306,11 @@ void UHWBaseCharacterMovementComponent::OnMovementModeChanged(EMovementMode Prev
 	{
 		switch (CustomMovementMode)
 		{
-			case (uint8)ECustomMovementMode::CMOVE_Mantling:
-			{
-				GetWorld()->GetTimerManager().SetTimer(MantlingTimer, this, &UHWBaseCharacterMovementComponent::EndMantle, CurrentMantlingParameters.Duration, false);
-				break;
-			}
+		case (uint8)ECustomMovementMode::CMOVE_Mantling:
+		{
+			GetWorld()->GetTimerManager().SetTimer(MantlingTimer, this, &UHWBaseCharacterMovementComponent::EndMantle, CurrentMantlingParameters.Duration, false);
+			break;
+		}
 		default:
 			break;
 		}
@@ -247,7 +325,7 @@ AHWBaseCharacter* UHWBaseCharacterMovementComponent::GetBaseCharacterOwner() con
 bool UHWBaseCharacterMovementComponent::CanAttemptJump() const
 {
 	bool Result = Super::CanAttemptJump();
-	
+
 	if (bIsOutOfStamina)
 	{
 		Result = !bIsOutOfStamina;
